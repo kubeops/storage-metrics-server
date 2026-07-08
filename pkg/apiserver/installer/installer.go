@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	cm_handlers "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/endpoints/handlers"
-	cm_rest "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
+	cm_handlers "kubeops.dev/storage-metrics-server/pkg/apiserver/endpoints/handlers"
+	cm_rest "kubeops.dev/storage-metrics-server/pkg/apiserver/registry/rest"
 
 	"github.com/emicklei/go-restful/v3"
 	"k8s.io/apimachinery/pkg/conversion"

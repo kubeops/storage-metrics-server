@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
 rules:
 - apiGroups: [""]
   resources: ["nodes", "namespaces", "persistentvolumeclaims"]
@@ -13,7 +13,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: storage-metrics-apiserver-server-resources
+  name: storage-metrics-server-server-resources
 rules:
 - apiGroups: ["custom.metrics.k8s.io"]
   resources: ["*"]

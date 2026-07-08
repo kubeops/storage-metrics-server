@@ -14,7 +14,7 @@ Create a project and initialize the dependencies like so:
 
 ```shell
 $ go mod init example.com/youradapter
-$ go get kubeops.dev/storage-metrics-apiserver@latest
+$ go get kubeops.dev/storage-metrics-server@latest
 ```
 
 ## Writing the Code
@@ -55,9 +55,9 @@ import (
     "k8s.io/client-go/dynamic"
     "k8s.io/metrics/pkg/apis/custom_metrics"
 
-    "kubeops.dev/storage-metrics-apiserver/pkg/provider"
-    "kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
-    "kubeops.dev/storage-metrics-apiserver/pkg/provider/helpers"
+    "kubeops.dev/storage-metrics-server/pkg/provider"
+    "kubeops.dev/storage-metrics-server/pkg/provider/defaults"
+    "kubeops.dev/storage-metrics-server/pkg/provider/helpers"
 )
 ```
 
@@ -301,8 +301,8 @@ import (
     "k8s.io/component-base/logs"
     "k8s.io/klog/v2"
 
-    basecmd "kubeops.dev/storage-metrics-apiserver/pkg/cmd"
-    "kubeops.dev/storage-metrics-apiserver/pkg/provider"
+    basecmd "kubeops.dev/storage-metrics-server/pkg/cmd"
+    "kubeops.dev/storage-metrics-server/pkg/provider"
 
     // make this the path to the provider that you just wrote
     yourprov "example.com/youradapter/pkg/provider"

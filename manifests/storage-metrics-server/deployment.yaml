@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: storage-metrics-apiserver
+      app.kubernetes.io/name: storage-metrics-server
       app.kubernetes.io/component: apiserver
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: storage-metrics-apiserver
+        app.kubernetes.io/name: storage-metrics-server
         app.kubernetes.io/component: apiserver
     spec:
-      serviceAccountName: storage-metrics-apiserver
+      serviceAccountName: storage-metrics-server
       priorityClassName: system-cluster-critical
       containers:
-      - name: storage-metrics-apiserver
-        image: storage-metrics-apiserver
+      - name: storage-metrics-server
+        image: storage-metrics-server
         imagePullPolicy: IfNotPresent
         args:
         - --secure-port=6443

@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"time"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/storage"
 
 	corev1 "k8s.io/api/core/v1"
 	apitypes "k8s.io/apimachinery/pkg/types"

@@ -14,7 +14,7 @@
 
 FROM {ARG_FROM}
 
-LABEL org.opencontainers.image.source="https://github.com/kubeops/storage-metrics-apiserver" \
+LABEL org.opencontainers.image.source="https://github.com/kubeops/storage-metrics-server" \
     name="Storage Metrics API Server" \
     maintainer=AppsCode \
     vendor=AppsCode \

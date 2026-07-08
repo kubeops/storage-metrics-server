@@ -20,8 +20,8 @@ package fake
 import (
 	"context"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/provider/defaults"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"

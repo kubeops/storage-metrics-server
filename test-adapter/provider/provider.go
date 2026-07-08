@@ -21,9 +21,9 @@ import (
 	"net/http"
 	"sync"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider/helpers"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/provider/defaults"
+	"kubeops.dev/storage-metrics-server/pkg/provider/helpers"
 
 	"github.com/emicklei/go-restful/v3"
 	apierr "k8s.io/apimachinery/pkg/api/errors"

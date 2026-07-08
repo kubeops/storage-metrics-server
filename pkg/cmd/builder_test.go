@@ -19,7 +19,7 @@ package cmd
 import (
 	"testing"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider/fake"
+	"kubeops.dev/storage-metrics-server/pkg/provider/fake"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/kube-openapi/pkg/builder"

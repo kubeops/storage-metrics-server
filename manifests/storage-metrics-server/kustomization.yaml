@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: storage-metrics
 
 commonLabels:
-  app.kubernetes.io/name: storage-metrics-apiserver
+  app.kubernetes.io/name: storage-metrics-server
   app.kubernetes.io/component: apiserver
 
 resources:
@@ -17,6 +17,6 @@ resources:
   - deployment.yaml
 
 images:
-  - name: storage-metrics-apiserver
-    newName: ghcr.io/kubeops/storage-metrics-apiserver
+  - name: storage-metrics-server
+    newName: ghcr.io/kubeops/storage-metrics-server
     newTag: latest

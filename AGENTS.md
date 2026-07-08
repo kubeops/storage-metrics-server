@@ -14,7 +14,7 @@ What the storage-metrics server exposes under `custom.metrics.k8s.io/v1beta2` on
 
 It scrapes each node's kubelet `/stats/summary` endpoint on a configurable interval (default 60s). Reading from `/stats/summary` (instead of the CSI `NodeGetVolumeStats`) means it works for **any kubelet-mounted filesystem PVC** — in-tree, external CSI, migrated, and pre-existing PVCs.
 
-The Go module path is `kubeops.dev/storage-metrics-apiserver` (renamed from the upstream `sigs.k8s.io/custom-metrics-apiserver`). Git remote is `kubeops/storage-metrics-apiserver`. The produced binary is `storage-metrics-apiserver`.
+The Go module path is `kubeops.dev/storage-metrics-server` (renamed from the upstream `sigs.k8s.io/custom-metrics-apiserver`). Git remote is `kubeops/storage-metrics-server`. The produced binary is `storage-metrics-server`.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ The Go module path is `kubeops.dev/storage-metrics-apiserver` (renamed from the 
 
 ### Storage-metrics addition
 
-- `cmd/storage-metrics-apiserver/` — the new binary (`main.go`, `Dockerfile`).
+- `cmd/storage-metrics-server/` — the new binary (`main.go`, `Dockerfile`).
 - `pkg/storagemetrics/`:
   - `manager/` — server bootstrap.
   - `options/` — CLI flags (scrape interval, kubelet auth, etc.).
@@ -41,7 +41,7 @@ The Go module path is `kubeops.dev/storage-metrics-apiserver` (renamed from the 
 - `manifests/` — kustomize-style install manifests.
 
 The Helm chart lives in the sibling `kubeops.dev/installer` repo at
-`charts/storage-metrics-apiserver` (not in this repo); `make install` deploys it from `../installer`.
+`charts/storage-metrics-server` (not in this repo); `make install` deploys it from `../installer`.
 
 ### Build harness
 
@@ -75,12 +75,12 @@ go test ./pkg/storagemetrics/scraper/... -run TestName -v
 
 ## Conventions
 
-- Module path is `kubeops.dev/storage-metrics-apiserver`. Imports must use that. (It was renamed from the upstream `sigs.k8s.io/custom-metrics-apiserver`; when rebasing against upstream, re-apply this rename to any newly pulled imports.)
-- **Upstream-tracking** fork. Prefer rebasing onto upstream over diverging. All AppsCode-specific code lives under `pkg/storagemetrics/` and `cmd/storage-metrics-apiserver/`; do not modify upstream packages (`pkg/apiserver/`, `pkg/registry/`, `pkg/provider/`, `pkg/cmd/`, `pkg/dynamicmapper/`, `pkg/generated/`) unless rebasing.
+- Module path is `kubeops.dev/storage-metrics-server`. Imports must use that. (It was renamed from the upstream `sigs.k8s.io/custom-metrics-apiserver`; when rebasing against upstream, re-apply this rename to any newly pulled imports.)
+- **Upstream-tracking** fork. Prefer rebasing onto upstream over diverging. All AppsCode-specific code lives under `pkg/storagemetrics/` and `cmd/storage-metrics-server/`; do not modify upstream packages (`pkg/apiserver/`, `pkg/registry/`, `pkg/provider/`, `pkg/cmd/`, `pkg/dynamicmapper/`, `pkg/generated/`) unless rebasing.
 - License: Apache-2.0 (`LICENSE`).
 - Sign off commits (`git commit -s`); contributions follow `CONTRIBUTING.md`.
 - The custom-metrics API surface (`custom.metrics.k8s.io/v1beta2`) is a **stable Kubernetes API** — do not break the wire format.
 - Metric names in `pkg/storagemetrics/provider/` are the **user contract** for HPAs that reference them. Don't rename without a coordinated migration.
 - The scraper reads `/stats/summary` from each node's kubelet. That choice is load-bearing for the "works on legacy PVCs" property; switching to `NodeGetVolumeStats` would break old in-tree volumes.
-- The Helm chart (in `kubeops.dev/installer` at `charts/storage-metrics-apiserver`) and the in-repo
+- The Helm chart (in `kubeops.dev/installer` at `charts/storage-metrics-server`) and the in-repo
   `manifests/` must stay in lockstep with the binary's flag surface.

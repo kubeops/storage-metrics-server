@@ -17,8 +17,8 @@ limitations under the License.
 package apiserver
 
 import (
-	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/installer"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/apiserver/installer"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

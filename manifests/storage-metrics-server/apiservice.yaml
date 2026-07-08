@@ -4,7 +4,7 @@ metadata:
   name: v1beta1.custom.metrics.k8s.io
 spec:
   service:
-    name: storage-metrics-apiserver
+    name: storage-metrics-server
     namespace: storage-metrics
     port: 443
   group: custom.metrics.k8s.io
@@ -19,7 +19,7 @@ metadata:
   name: v1beta2.custom.metrics.k8s.io
 spec:
   service:
-    name: storage-metrics-apiserver
+    name: storage-metrics-server
     namespace: storage-metrics
     port: 443
   group: custom.metrics.k8s.io

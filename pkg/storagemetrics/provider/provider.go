@@ -22,8 +22,8 @@ import (
 	"context"
 	"fmt"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/storage"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

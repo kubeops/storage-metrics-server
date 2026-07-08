@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Command storage-metrics-apiserver runs a Kubernetes Custom Metrics API
+// Command storage-metrics-server runs a Kubernetes Custom Metrics API
 // server that exposes PVC storage capacity, usage and inode metrics
 // scraped from each node's kubelet /stats/summary endpoint.
 //
@@ -28,14 +28,14 @@ import (
 	"os"
 	"time"
 
-	apiservermetrics "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
-	basecmd "kubeops.dev/storage-metrics-apiserver/pkg/cmd"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/manager"
-	smoptions "kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/options"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper/client"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+	apiservermetrics "kubeops.dev/storage-metrics-server/pkg/apiserver/metrics"
+	basecmd "kubeops.dev/storage-metrics-server/pkg/cmd"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/manager"
+	smoptions "kubeops.dev/storage-metrics-server/pkg/storagemetrics/options"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/provider"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/scraper"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/scraper/client"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/storage"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
@@ -72,14 +72,14 @@ func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
-	klog.Infof("storage-metrics-apiserver version=%q strategy=%q commit=%q built=%q go=%q platform=%q",
+	klog.Infof("storage-metrics-server version=%q strategy=%q commit=%q built=%q go=%q platform=%q",
 		Version, VersionStrategy, CommitHash, CommitTimestamp, GoVersion, Platform)
 
 	a := &StorageAdapter{
 		KubeletOptions: smoptions.NewKubeletClientOptions(),
 		ScrapeOptions:  smoptions.NewStorageMetricsOptions(),
 	}
-	a.Name = "storage-metrics-apiserver"
+	a.Name = "storage-metrics-server"
 
 	// AdapterBase.Flags() seeds the recommended-options flags. We append our
 	// own kubelet/scraper flags onto the same FlagSet.
@@ -98,7 +98,7 @@ func main() {
 	}
 
 	if err := a.run(); err != nil {
-		klog.Fatalf("storage-metrics-apiserver: %v", err)
+		klog.Fatalf("storage-metrics-server: %v", err)
 	}
 }
 

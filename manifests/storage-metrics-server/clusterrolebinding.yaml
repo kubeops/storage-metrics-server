@@ -1,33 +1,33 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
 subjects:
 - kind: ServiceAccount
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
   namespace: storage-metrics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: storage-metrics-apiserver-auth-delegator
+  name: storage-metrics-server-auth-delegator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:auth-delegator
 subjects:
 - kind: ServiceAccount
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
   namespace: storage-metrics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: storage-metrics-apiserver-auth-reader
+  name: storage-metrics-server-auth-reader
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -35,17 +35,17 @@ roleRef:
   name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: storage-metrics-apiserver
+  name: storage-metrics-server
   namespace: storage-metrics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: storage-metrics-apiserver-hpa-controller
+  name: storage-metrics-server-hpa-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: storage-metrics-apiserver-server-resources
+  name: storage-metrics-server-server-resources
 subjects:
 - kind: ServiceAccount
   name: horizontal-pod-autoscaler

@@ -37,7 +37,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - kubeops.dev/storage-metrics-apiserver
+        - kubeops.dev/storage-metrics-server
   exclusions:
     paths:
       - vendor

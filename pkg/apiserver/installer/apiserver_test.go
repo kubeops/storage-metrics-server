@@ -24,11 +24,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
-	custommetricstorage "kubeops.dev/storage-metrics-apiserver/pkg/registry/custom_metrics"
-	externalmetricstorage "kubeops.dev/storage-metrics-apiserver/pkg/registry/external_metrics"
-	sampleprovider "kubeops.dev/storage-metrics-apiserver/test-adapter/provider"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/provider/defaults"
+	custommetricstorage "kubeops.dev/storage-metrics-server/pkg/registry/custom_metrics"
+	externalmetricstorage "kubeops.dev/storage-metrics-server/pkg/registry/external_metrics"
+	sampleprovider "kubeops.dev/storage-metrics-server/test-adapter/provider"
 
 	"github.com/emicklei/go-restful/v3"
 	"k8s.io/apimachinery/pkg/api/meta"
