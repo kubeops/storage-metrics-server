@@ -1,4 +1,4 @@
-module kubeops.dev/storage-metrics-apiserver
+module kubeops.dev/storage-metrics-server
 
 go 1.25.0
 

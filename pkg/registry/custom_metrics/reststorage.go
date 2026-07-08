@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
-	cm_rest "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/apiserver/metrics"
+	cm_rest "kubeops.dev/storage-metrics-server/pkg/apiserver/registry/rest"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
 
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/labels"

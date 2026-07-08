@@ -19,7 +19,7 @@ package options
 import (
 	"testing"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver"
+	"kubeops.dev/storage-metrics-server/pkg/apiserver"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"

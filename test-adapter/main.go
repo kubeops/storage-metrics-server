@@ -22,10 +22,10 @@ import (
 	"os"
 	"time"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
-	basecmd "kubeops.dev/storage-metrics-apiserver/pkg/cmd"
-	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	fakeprov "kubeops.dev/storage-metrics-apiserver/test-adapter/provider"
+	"kubeops.dev/storage-metrics-server/pkg/apiserver/metrics"
+	basecmd "kubeops.dev/storage-metrics-server/pkg/cmd"
+	"kubeops.dev/storage-metrics-server/pkg/provider"
+	fakeprov "kubeops.dev/storage-metrics-server/test-adapter/provider"
 
 	"github.com/emicklei/go-restful/v3"
 	"k8s.io/component-base/logs"

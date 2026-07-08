@@ -17,7 +17,7 @@
 set -eou pipefail
 
 GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/kubeops.dev/storage-metrics-apiserver"
+REPO_ROOT="$GOPATH/src/kubeops.dev/storage-metrics-server"
 
 pushd $REPO_ROOT
 

@@ -1,4 +1,4 @@
-# storage-metrics-apiserver
+# storage-metrics-server
 
 This is a fork of [`kubernetes-sigs/custom-metrics-apiserver`](https://github.com/kubernetes-sigs/custom-metrics-apiserver)
 that adds **Kubernetes Storage Metrics Server** — a Custom Metrics API server
@@ -6,7 +6,7 @@ exposing per-PVC capacity and usage metrics for storage autoscaling.
 
 ## What's added
 
-A standalone binary, `cmd/storage-metrics-apiserver`, that:
+A standalone binary, `cmd/storage-metrics-server`, that:
 
 - registers under `custom.metrics.k8s.io/v1beta2`
 - scrapes every node's kubelet `/stats/summary` endpoint on a configurable
@@ -31,12 +31,12 @@ pkg/storagemetrics/
   manager/         tick loop driving scrape -> store
   provider/        custom_metrics.MetricsProvider over the cache
   options/         kubelet client + scrape flags
-cmd/storage-metrics-apiserver/  main binary
-manifests/storage-metrics-apiserver/  Kustomize bundle
+cmd/storage-metrics-server/  main binary
+manifests/storage-metrics-server/  Kustomize bundle
 ```
 
 The Helm chart lives in the [`kubeops.dev/installer`](https://github.com/kubeops/installer)
-repo at `charts/storage-metrics-apiserver`.
+repo at `charts/storage-metrics-server`.
 
 ### Scaling notes (large clusters)
 
@@ -53,15 +53,15 @@ repo at `charts/storage-metrics-apiserver`.
 
 ```bash
 kubectl create namespace storage-metrics
-helm install storage-metrics-apiserver \
-  ../installer/charts/storage-metrics-apiserver \
+helm install storage-metrics-server \
+  ../installer/charts/storage-metrics-server \
   --namespace storage-metrics
 ```
 
 ### Install (kustomize)
 
 ```bash
-kubectl apply -k manifests/storage-metrics-apiserver
+kubectl apply -k manifests/storage-metrics-server
 ```
 
 ### Query

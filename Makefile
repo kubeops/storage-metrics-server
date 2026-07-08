@@ -15,12 +15,12 @@
 SHELL=/bin/bash -o pipefail
 
 PRODUCT_OWNER_NAME := appscode
-PRODUCT_NAME       := storage-metrics-apiserver
+PRODUCT_NAME       := storage-metrics-server
 ENFORCE_LICENSE    ?=
 
 GO_PKG   := kubeops.dev
 REPO     := $(notdir $(shell pwd))
-BIN      := storage-metrics-apiserver
+BIN      := storage-metrics-server
 COMPRESS ?= no
 
 GOPATH := $(shell go env GOPATH)
@@ -337,7 +337,7 @@ install:
 	@cd ../installer; \
 	kubectl create ns $(KUBE_NAMESPACE) || true; \
 	kubectl label ns $(KUBE_NAMESPACE) pod-security.kubernetes.io/enforce=restricted --overwrite; \
-	helm upgrade -i storage-metrics-apiserver charts/storage-metrics-apiserver --wait --force \
+	helm upgrade -i storage-metrics-server charts/storage-metrics-server --wait --force \
 		--namespace=$(KUBE_NAMESPACE) --create-namespace \
 		--set registryFQDN="" \
 		--set image.registry=$(REGISTRY) \
@@ -349,7 +349,7 @@ install:
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	helm uninstall storage-metrics-apiserver --namespace=$(KUBE_NAMESPACE) || true
+	helm uninstall storage-metrics-server --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: purge
 purge: uninstall
@@ -434,7 +434,7 @@ clean:
 
 .PHONY: run
 run:
-	go run -mod=vendor ./cmd/storage-metrics-apiserver \
+	go run -mod=vendor ./cmd/storage-metrics-server \
 		--secure-port=6443 \
 		--lister-kubeconfig=$(KUBECONFIG) \
 		--authorization-kubeconfig=$(KUBECONFIG) \

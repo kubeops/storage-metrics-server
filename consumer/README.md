@@ -2,11 +2,11 @@
 ## Build & Push
 
 ```bash
-docker build -t ghcr.io/arnobkumarsaha/storage-metrics-apiserver:dev \
+docker build -t ghcr.io/arnobkumarsaha/storage-metrics-server:dev \
   --build-arg TARGETARCH=amd64 \
-  -f cmd/storage-metrics-apiserver/Dockerfile .
+  -f cmd/storage-metrics-server/Dockerfile .
 
-docker push ghcr.io/arnobkumarsaha/storage-metrics-apiserver:dev
+docker push ghcr.io/arnobkumarsaha/storage-metrics-server:dev
 ```
 
 ## Usage

@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	cm_rest "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
+	cm_rest "kubeops.dev/storage-metrics-server/pkg/apiserver/registry/rest"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"

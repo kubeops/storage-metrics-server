@@ -23,8 +23,8 @@ import (
 	"sync"
 	"time"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/scraper"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/storage"
 
 	"k8s.io/klog/v2"
 )

@@ -19,7 +19,7 @@ package installer
 import (
 	"net/http"
 
-	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
+	"kubeops.dev/storage-metrics-server/pkg/apiserver/registry/rest"
 
 	"github.com/emicklei/go-restful/v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

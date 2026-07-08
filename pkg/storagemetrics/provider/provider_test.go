@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	provider2 "kubeops.dev/storage-metrics-apiserver/pkg/provider"
-	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+	provider2 "kubeops.dev/storage-metrics-server/pkg/provider"
+	"kubeops.dev/storage-metrics-server/pkg/storagemetrics/storage"
 
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
