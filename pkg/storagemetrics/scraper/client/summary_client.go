@@ -27,13 +27,13 @@ import (
 	"strconv"
 	"time"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	corev1 "k8s.io/api/core/v1"
 	apitypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
-	stats "k8s.io/kubelet/pkg/apis/stats/v1alpha1"
 	"k8s.io/klog/v2"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
+	stats "k8s.io/kubelet/pkg/apis/stats/v1alpha1"
 )
 
 // summaryClient hits a kubelet's /stats/summary endpoint and converts the

@@ -19,13 +19,12 @@ package cmd
 import (
 	"testing"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider/fake"
+
 	"github.com/stretchr/testify/assert"
+	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/metrics/pkg/apis/custom_metrics/v1beta2"
 	"k8s.io/metrics/pkg/apis/external_metrics/v1beta1"
-
-	"k8s.io/kube-openapi/pkg/builder"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider/fake"
 )
 
 func TestDefaultOpenAPIConfig(t *testing.T) {

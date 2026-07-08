@@ -23,8 +23,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/emicklei/go-restful/v3"
+	cm_handlers "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/endpoints/handlers"
+	cm_rest "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
 
+	"github.com/emicklei/go-restful/v3"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -33,9 +35,6 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/handlers"
 	"k8s.io/apiserver/pkg/endpoints/handlers/negotiation"
 	"k8s.io/apiserver/pkg/registry/rest"
-
-	cm_handlers "sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/endpoints/handlers"
-	cm_rest "sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/registry/rest"
 )
 
 // NB: the contents of this file should mostly be a subset of the functionality

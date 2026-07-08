@@ -24,15 +24,13 @@ import (
 	"k8s.io/utils/clock"
 )
 
-var (
-	metricFreshness = metrics.NewHistogramVec(&metrics.HistogramOpts{
-		Namespace:      "metrics_apiserver",
-		Name:           "metric_freshness_seconds",
-		Help:           "Freshness of metrics exported",
-		StabilityLevel: metrics.ALPHA,
-		Buckets:        metrics.ExponentialBuckets(1, 1.364, 20),
-	}, []string{"group"})
-)
+var metricFreshness = metrics.NewHistogramVec(&metrics.HistogramOpts{
+	Namespace:      "metrics_apiserver",
+	Name:           "metric_freshness_seconds",
+	Help:           "Freshness of metrics exported",
+	StabilityLevel: metrics.ALPHA,
+	Buckets:        metrics.ExponentialBuckets(1, 1.364, 20),
+}, []string{"group"})
 
 // RegisterMetrics registers API server metrics, given a registration function.
 func RegisterMetrics(registrationFunc func(metrics.Registerable) error) error {

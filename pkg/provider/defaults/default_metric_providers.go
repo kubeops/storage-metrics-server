@@ -18,7 +18,7 @@ limitations under the License.
 package defaults
 
 import (
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
 )
 
 type DefaultExternalMetricsProvider struct{}

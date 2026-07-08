@@ -17,6 +17,10 @@ limitations under the License.
 package apiserver
 
 import (
+	specificapi "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/installer"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	metricstorage "kubeops.dev/storage-metrics-apiserver/pkg/registry/custom_metrics"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,10 +29,6 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/discovery"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
-
-	specificapi "sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/installer"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
-	metricstorage "sigs.k8s.io/custom-metrics-apiserver/pkg/registry/custom_metrics"
 )
 
 func (s *CustomMetricsAdapterServer) InstallCustomMetricsAPI() error {

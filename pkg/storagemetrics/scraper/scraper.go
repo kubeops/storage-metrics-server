@@ -24,14 +24,14 @@ import (
 	"math/rand"
 	"time"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper/client"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	apitypes "k8s.io/apimachinery/pkg/types"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/klog/v2"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/scraper/client"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
 )
 
 // Scraper merges per-node /stats/summary responses into a single PVC batch.

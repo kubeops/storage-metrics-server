@@ -20,15 +20,15 @@ import (
 	"context"
 	"fmt"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/metrics/pkg/apis/external_metrics"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/metrics"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
 )
 
 // REST is a wrapper for CustomMetricsProvider that provides implementation for Storage and Lister
@@ -39,8 +39,10 @@ type REST struct {
 	rest.TableConvertor
 }
 
-var _ rest.Storage = &REST{}
-var _ rest.Lister = &REST{}
+var (
+	_ rest.Storage = &REST{}
+	_ rest.Lister  = &REST{}
+)
 
 // NewREST returns new REST object for provided CustomMetricsProvider.
 func NewREST(emProvider provider.ExternalMetricsProvider) *REST {

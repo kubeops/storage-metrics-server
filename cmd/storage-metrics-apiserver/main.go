@@ -28,6 +28,15 @@ import (
 	"os"
 	"time"
 
+	apiservermetrics "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
+	basecmd "kubeops.dev/storage-metrics-apiserver/pkg/cmd"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/manager"
+	smoptions "kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/options"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper/client"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -35,15 +44,19 @@ import (
 	"k8s.io/component-base/logs"
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
+)
 
-	apiservermetrics "sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/metrics"
-	basecmd "sigs.k8s.io/custom-metrics-apiserver/pkg/cmd"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/manager"
-	smoptions "sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/options"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/provider"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/scraper"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/scraper/client"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
+// Build metadata stamped in via -ldflags -X by hack/build.sh.
+var (
+	Version         string
+	VersionStrategy string
+	GitTag          string
+	GitBranch       string
+	CommitHash      string
+	CommitTimestamp string
+	GoVersion       string
+	Compiler        string
+	Platform        string
 )
 
 // StorageAdapter wires the kubelet scraper, in-memory cache and custom
@@ -58,6 +71,9 @@ type StorageAdapter struct {
 func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
+
+	klog.Infof("storage-metrics-apiserver version=%q strategy=%q commit=%q built=%q go=%q platform=%q",
+		Version, VersionStrategy, CommitHash, CommitTimestamp, GoVersion, Platform)
 
 	a := &StorageAdapter{
 		KubeletOptions: smoptions.NewKubeletClientOptions(),

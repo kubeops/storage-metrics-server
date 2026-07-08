@@ -21,6 +21,9 @@ import (
 	"testing"
 	"time"
 
+	provider2 "kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
@@ -28,9 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	apitypes "k8s.io/apimachinery/pkg/types"
-
-	provider2 "sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
 )
 
 type fakePVCLister struct {

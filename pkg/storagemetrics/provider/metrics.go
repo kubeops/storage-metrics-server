@@ -17,9 +17,9 @@ limitations under the License.
 package provider
 
 import (
-	"k8s.io/apimachinery/pkg/api/resource"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
 
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // Metric names exposed under custom.metrics.k8s.io/v1beta2 for the
