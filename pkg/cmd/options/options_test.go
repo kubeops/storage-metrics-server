@@ -19,15 +19,14 @@ package options
 import (
 	"testing"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver"
+
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
-
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/rest"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver"
 )
 
 func TestValidate(t *testing.T) {

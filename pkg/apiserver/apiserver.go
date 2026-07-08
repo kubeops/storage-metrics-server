@@ -17,6 +17,9 @@ limitations under the License.
 package apiserver
 
 import (
+	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/installer"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,9 +30,6 @@ import (
 	"k8s.io/client-go/informers"
 	cminstall "k8s.io/metrics/pkg/apis/custom_metrics/install"
 	eminstall "k8s.io/metrics/pkg/apis/external_metrics/install"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/installer"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
 )
 
 var (

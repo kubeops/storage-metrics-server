@@ -24,8 +24,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/emicklei/go-restful/v3"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
+	custommetricstorage "kubeops.dev/storage-metrics-apiserver/pkg/registry/custom_metrics"
+	externalmetricstorage "kubeops.dev/storage-metrics-apiserver/pkg/registry/external_metrics"
+	sampleprovider "kubeops.dev/storage-metrics-apiserver/test-adapter/provider"
 
+	"github.com/emicklei/go-restful/v3"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -43,12 +48,6 @@ import (
 	"k8s.io/metrics/pkg/apis/external_metrics"
 	installem "k8s.io/metrics/pkg/apis/external_metrics/install"
 	emv1beta1 "k8s.io/metrics/pkg/apis/external_metrics/v1beta1"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider/defaults"
-	custommetricstorage "sigs.k8s.io/custom-metrics-apiserver/pkg/registry/custom_metrics"
-	externalmetricstorage "sigs.k8s.io/custom-metrics-apiserver/pkg/registry/external_metrics"
-	sampleprovider "sigs.k8s.io/custom-metrics-apiserver/test-adapter/provider"
 )
 
 // defaultAPIServer exposes nested objects for testability.

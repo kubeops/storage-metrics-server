@@ -22,6 +22,9 @@ import (
 	"context"
 	"fmt"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,9 +32,6 @@ import (
 	apitypes "k8s.io/apimachinery/pkg/types"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
 )
 
 // pvcGroupResource is the only resource we serve metrics on. We hard-code
@@ -168,4 +168,3 @@ func buildMetricValue(point storage.PVCMetricsPoint, name apitypes.NamespacedNam
 		Value:     q,
 	}, true
 }
-

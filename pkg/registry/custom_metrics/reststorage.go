@@ -20,6 +20,10 @@ import (
 	"context"
 	"fmt"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver/metrics"
+	cm_rest "kubeops.dev/storage-metrics-apiserver/pkg/apiserver/registry/rest"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,10 +32,6 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/metrics"
-	cm_rest "sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver/registry/rest"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
 )
 
 type REST struct {
@@ -39,8 +39,10 @@ type REST struct {
 	freshnessObserver metrics.FreshnessObserver
 }
 
-var _ rest.Storage = &REST{}
-var _ cm_rest.ListerWithOptions = &REST{}
+var (
+	_ rest.Storage              = &REST{}
+	_ cm_rest.ListerWithOptions = &REST{}
+)
 
 func NewREST(cmProvider provider.CustomMetricsProvider) *REST {
 	freshnessObserver := metrics.NewFreshnessObserver(custom_metrics.GroupName)

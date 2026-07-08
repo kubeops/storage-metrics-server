@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Copyright AppsCode Inc. and Contributors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM BASEIMAGE
-COPY adapter /
-ENTRYPOINT ["/adapter"]
+set -eou pipefail
+
+export CGO_ENABLED=1
+export GO111MODULE=on
+export GOFLAGS="-mod=vendor"
+
+TARGETS=$(for d in "$@"; do echo ./$d/...; done)
+
+echo "Running tests:"
+go test -race -installsuffix "static" ${TARGETS}
+echo

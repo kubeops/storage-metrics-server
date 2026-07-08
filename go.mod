@@ -1,4 +1,4 @@
-module sigs.k8s.io/custom-metrics-apiserver
+module kubeops.dev/storage-metrics-apiserver
 
 go 1.25.0
 

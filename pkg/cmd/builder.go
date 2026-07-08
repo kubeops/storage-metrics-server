@@ -22,8 +22,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/spf13/pflag"
+	"kubeops.dev/storage-metrics-apiserver/pkg/apiserver"
+	"kubeops.dev/storage-metrics-apiserver/pkg/cmd/options"
+	"kubeops.dev/storage-metrics-apiserver/pkg/dynamicmapper"
+	generatedcore "kubeops.dev/storage-metrics-apiserver/pkg/generated/openapi/core"
+	generatedcustommetrics "kubeops.dev/storage-metrics-apiserver/pkg/generated/openapi/custommetrics"
+	generatedexternalmetrics "kubeops.dev/storage-metrics-apiserver/pkg/generated/openapi/externalmetrics"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
 
+	"github.com/spf13/pflag"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
@@ -35,14 +42,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	openapicommon "k8s.io/kube-openapi/pkg/common"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/apiserver"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/cmd/options"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/dynamicmapper"
-	generatedcore "sigs.k8s.io/custom-metrics-apiserver/pkg/generated/openapi/core"
-	generatedcustommetrics "sigs.k8s.io/custom-metrics-apiserver/pkg/generated/openapi/custommetrics"
-	generatedexternalmetrics "sigs.k8s.io/custom-metrics-apiserver/pkg/generated/openapi/externalmetrics"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
 )
 
 // AdapterBase provides a base set of functionality for any custom metrics adapter.

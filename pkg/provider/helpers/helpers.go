@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -29,8 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
 )
 
 // ResourceFor attempts to resolve a single qualified resource for the given metric.

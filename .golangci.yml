@@ -1,37 +1,14 @@
 version: "2"
-run:
-  timeout: 7m
 linters:
   default: standard
   enable:
-    - bodyclose
-    - copyloopvar
-    - dogsled
-    - dupl
-    - errcheck
-    - gocritic
-    - gocyclo
-    - goprintffuncname
-    - gosec
-    - govet
-    - ineffassign
-    - misspell
-    - nakedret
-    - nolintlint
-    - revive
-    - staticcheck
-    - unconvert
-    - unused
-    - whitespace
+    - unparam
   settings:
-    misspell:
-      ignore-rules:
-        - creater
     staticcheck:
-     checks:
-       - all
-       # Disable QF1008 to retain embedded fields for better readability.
-       - "-QF1008"
+      checks:
+        - all
+        # Retain embedded fields in selectors for readability (upstream style).
+        - "-QF1008"
   exclusions:
     generated: lax
     presets:
@@ -39,10 +16,20 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      # Relax error/param checks in test files so the suite stays close to the
+      # upstream custom-metrics-apiserver tests.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - unparam
     paths:
+      - vendor
+      - pkg/generated
       - third_party$
       - builtin$
       - examples$
+
 formatters:
   enable:
     - gofmt
@@ -50,10 +37,17 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - sigs.k8s.io/custom-metrics-apiserver
+        - kubeops.dev/storage-metrics-apiserver
   exclusions:
-    generated: lax
     paths:
+      - vendor
+      - pkg/generated
       - third_party$
       - builtin$
       - examples$
+
+issues:
+  max-same-issues: 100
+
+run:
+  timeout: 10m

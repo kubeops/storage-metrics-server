@@ -1,20 +1,144 @@
-REGISTRY?=kubernetes-sigs
-IMAGE?=k8s-test-metrics-adapter
-TEMP_DIR:=$(shell mktemp -d)
-ARCH?=amd64
-OUT_DIR?=./_output
-GOPATH:=$(shell go env GOPATH)
+# Copyright AppsCode Inc. and Contributors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-VERSION?=latest
+SHELL=/bin/bash -o pipefail
 
-GOLANGCI_VERSION:=2.8.0
+PRODUCT_OWNER_NAME := appscode
+PRODUCT_NAME       := storage-metrics-apiserver
+ENFORCE_LICENSE    ?=
 
-.PHONY: all
-all: build-test-adapter
+GO_PKG   := kubeops.dev
+REPO     := $(notdir $(shell pwd))
+BIN      := storage-metrics-apiserver
+COMPRESS ?= no
+
+GOPATH := $(shell go env GOPATH)
+
+# Where to push the docker image.
+REGISTRY ?= ghcr.io/appscode
+SRC_REG  ?=
+
+# This version-strategy uses git tags to set the version string
+git_branch       := $(shell git rev-parse --abbrev-ref HEAD)
+git_tag          := $(shell git describe --tags --exact-match --abbrev=0 2>/dev/null || echo "")
+commit_hash      := $(shell git rev-parse --verify HEAD)
+commit_timestamp := $(shell date --date="@$$(git show -s --format=%ct)" --utc +%FT%T)
+
+VERSION          := $(shell git describe --tags --always --dirty)
+version_strategy := commit_hash
+ifdef git_tag
+	VERSION := $(git_tag)
+	version_strategy := tag
+else
+	ifeq (,$(findstring $(git_branch),master HEAD))
+		ifneq (,$(patsubst release-%,,$(git_branch)))
+			VERSION := $(git_branch)
+			version_strategy := branch
+		endif
+	endif
+endif
+
+###
+### These variables should not need tweaking.
+###
+
+SRC_PKGS := cmd pkg test-adapter # directories which hold app source excluding tests (not vendored)
+SRC_DIRS := $(SRC_PKGS) # directories which hold app source (not vendored)
+
+DOCKER_PLATFORMS := linux/amd64 linux/arm64
+BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
+
+# Used internally.  Users should pass GOOS and/or GOARCH.
+OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
+ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
+
+BASEIMAGE_PROD   ?= alpine
+BASEIMAGE_DBG    ?= debian:12
+BASEIMAGE_UBI    ?= registry.access.redhat.com/ubi10/ubi-minimal
+
+IMAGE            := $(REGISTRY)/$(BIN)
+VERSION_PROD     := $(VERSION)
+VERSION_DBG      := $(VERSION)-dbg
+VERSION_UBI      := $(VERSION)-ubi
+TAG              := $(VERSION)_$(OS)_$(ARCH)
+TAG_PROD         := $(TAG)
+TAG_DBG          := $(VERSION)-dbg_$(OS)_$(ARCH)
+TAG_UBI          := $(VERSION)-ubi_$(OS)_$(ARCH)
+
+GO_VERSION       ?= 1.25
+BUILD_IMAGE      ?= ghcr.io/appscode/golang-dev:$(GO_VERSION)
+
+OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
+ifeq ($(OS),windows)
+  OUTBIN = bin/$(OS)_$(ARCH)/$(BIN).exe
+endif
+
+# Directories that we need created to build/test.
+BUILD_DIRS  := bin/$(OS)_$(ARCH)     \
+               .go/bin/$(OS)_$(ARCH) \
+               .go/cache
+
+DOCKERFILE_PROD  = Dockerfile.in
+DOCKERFILE_DBG   = Dockerfile.dbg
+DOCKERFILE_UBI   = Dockerfile.ubi
+
+DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
+
+# If you want to build all binaries, see the 'all-build' rule.
+# If you want to build all containers, see the 'all-container' rule.
+# If you want to build AND push all containers, see the 'all-push' rule.
+all: fmt build
+
+# For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
+# because make pattern rules don't match with embedded '/' characters.
+
+build-%:
+	@$(MAKE) build                        \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+container-%:
+	@$(MAKE) container                    \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+push-%:
+	@$(MAKE) push                         \
+	    --no-print-directory              \
+	    GOOS=$(firstword $(subst _, ,$*)) \
+	    GOARCH=$(lastword $(subst _, ,$*))
+
+all-build: $(addprefix build-, $(subst /,_, $(BIN_PLATFORMS)))
+
+all-container: $(addprefix container-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+all-push: $(addprefix push-, $(subst /,_, $(DOCKER_PLATFORMS)))
+
+version:
+	@echo version=$(VERSION)
+	@echo version_strategy=$(version_strategy)
+	@echo git_tag=$(git_tag)
+	@echo git_branch=$(git_branch)
+	@echo commit_hash=$(commit_hash)
+	@echo commit_timestamp=$(commit_timestamp)
 
 
-# Generate
-# --------
+# Generate OpenAPI definitions consumed by the custom-metrics apiserver.
+# Unlike CRD-based operators, this fork has no clientset/CRD codegen; only the
+# committed pkg/generated/openapi/*/zz_generated.openapi.go files are generated.
 
 generated_openapis := core custommetrics externalmetrics
 generated_files := $(generated_openapis:%=pkg/generated/openapi/%/zz_generated.openapi.go)
@@ -36,100 +160,297 @@ pkg/generated/openapi/%/zz_generated.openapi.go: go.mod go.sum
 .PHONY: update-generated
 update-generated: $(generated_files)
 
+.PHONY: gen
+gen: update-generated
 
-# Build
-# -----
+fmt: $(BUILD_DIRS)
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        REPO_PKG=$(GO_PKG)                                  \
+	        ./hack/fmt.sh $(SRC_DIRS)                           \
+	    "
 
-.PHONY: build-test-adapter
-build-test-adapter: update-generated
-	CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) go build -o $(OUT_DIR)/$(ARCH)/test-adapter sigs.k8s.io/custom-metrics-apiserver/test-adapter
+build: $(OUTBIN)
 
-.PHONY: build-storage-metrics-apiserver
-build-storage-metrics-apiserver: update-generated
-	CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) go build -trimpath -ldflags="-s -w" \
-		-o $(OUT_DIR)/$(ARCH)/storage-metrics-apiserver \
-		sigs.k8s.io/custom-metrics-apiserver/cmd/storage-metrics-apiserver
+# The following structure defeats Go's (intentional) behavior to always touch
+# result files, even if they have not changed.  This will still run `go` but
+# will not trigger further work if nothing has actually changed.
 
-STORAGE_METRICS_REGISTRY?=ghcr.io/kubeops
-STORAGE_METRICS_IMAGE?=storage-metrics-apiserver
-.PHONY: storage-metrics-apiserver-container
-storage-metrics-apiserver-container:
-	docker build -t $(STORAGE_METRICS_REGISTRY)/$(STORAGE_METRICS_IMAGE):$(VERSION) \
-		--build-arg TARGETARCH=$(ARCH) \
-		-f cmd/storage-metrics-apiserver/Dockerfile .
+$(OUTBIN): .go/$(OUTBIN).stamp
+	@true
 
+# This will build the binary under ./.go and update the real binary iff needed.
+.PHONY: .go/$(OUTBIN).stamp
+.go/$(OUTBIN).stamp: $(BUILD_DIRS)
+	@echo "making $(OUTBIN)"
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        PRODUCT_OWNER_NAME=$(PRODUCT_OWNER_NAME)            \
+	        PRODUCT_NAME=$(PRODUCT_NAME)                        \
+	        ENFORCE_LICENSE=$(ENFORCE_LICENSE)                  \
+	        ARCH=$(ARCH)                                        \
+	        OS=$(OS)                                            \
+	        VERSION=$(VERSION)                                  \
+	        version_strategy=$(version_strategy)                \
+	        git_branch=$(git_branch)                            \
+	        git_tag=$(git_tag)                                  \
+	        commit_hash=$(commit_hash)                          \
+	        commit_timestamp=$(commit_timestamp)                \
+	        ./hack/build.sh                                     \
+	    "
+	@if [ $(COMPRESS) = yes ] && [ $(OS) != darwin ]; then          \
+		echo "compressing $(OUTBIN)";                               \
+		@docker run                                                 \
+		    -i                                                      \
+		    --rm                                                    \
+		    -u $$(id -u):$$(id -g)                                  \
+		    -v $$(pwd):/src                                         \
+		    -w /src                                                 \
+		    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+		    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+		    -v $$(pwd)/.go/cache:/.cache                            \
+		    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+		    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+		    $(BUILD_IMAGE)                                          \
+		    upx --brute /go/$(OUTBIN);                              \
+	fi
+	@if ! cmp -s .go/$(OUTBIN) $(OUTBIN); then \
+	    mv .go/$(OUTBIN) $(OUTBIN);            \
+	    date >$@;                              \
+	fi
+	@echo
 
-# Format and lint
-# ---------------
+# Used to track state in hidden files.
+DOTFILE_IMAGE    = $(subst /,_,$(IMAGE))-$(TAG)
 
-HAS_GOLANGCI_VERSION:=$(shell $(GOPATH)/bin/golangci-lint version --short)
-.PHONY: golangci
-golangci:
-ifneq ($(HAS_GOLANGCI_VERSION), $(GOLANGCI_VERSION))
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v$(GOLANGCI_VERSION)
+container: bin/.container-$(DOTFILE_IMAGE)-PROD bin/.container-$(DOTFILE_IMAGE)-DBG bin/.container-$(DOTFILE_IMAGE)-UBI
+ifeq (,$(SRC_REG))
+bin/.container-$(DOTFILE_IMAGE)-%: bin/$(OS)_$(ARCH)/$(BIN) $(DOCKERFILE_%)
+	@echo "container: $(IMAGE):$(TAG_$*)"
+	@sed                                  \
+		-e 's|{ARG_BIN}|$(BIN)|g'           \
+		-e 's|{ARG_ARCH}|$(ARCH)|g'         \
+		-e 's|{ARG_OS}|$(OS)|g'             \
+		-e 's|{ARG_FROM}|$(BASEIMAGE_$*)|g' \
+		-e 's|{ARG_TAG}|$(TAG)|g'           \
+		$(DOCKERFILE_$*) > bin/.dockerfile-$*-$(OS)_$(ARCH)
+	@docker buildx build --platform $(OS)/$(ARCH) --load --pull -t $(IMAGE):$(TAG_$*) -f bin/.dockerfile-$*-$(OS)_$(ARCH) .
+	@docker images -q $(IMAGE):$(TAG_$*) > $@
+	@echo
+else
+bin/.container-$(DOTFILE_IMAGE)-%:
+	@echo "container: $(IMAGE):$(TAG_$*)"
+	@docker tag $(SRC_REG)/$(BIN):$(TAG_$*) $(IMAGE):$(TAG_$*)
+	@echo
 endif
 
-.PHONY: verify-lint
-verify-lint: golangci
-	$(GOPATH)/bin/golangci-lint run --modules-download-mode=readonly || (echo 'Run "make update-lint"' && exit 1)
+push: bin/.push-$(DOTFILE_IMAGE)-PROD bin/.push-$(DOTFILE_IMAGE)-DBG bin/.push-$(DOTFILE_IMAGE)-UBI
+bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
+	@docker push $(IMAGE):$(TAG_$*)
+	@echo "pushed: $(IMAGE):$(TAG_$*)"
+	@echo
 
-.PHONY: update-lint
-update-lint: golangci
-	$(GOPATH)/bin/golangci-lint run --fix --modules-download-mode=readonly
-
-
-# License
-# -------
-
-HAS_ADDLICENSE:=$(shell which $(GOPATH)/bin/addlicense)
-.PHONY: verify-licenses
-verify-licenses:addlicense
-	find -type f -name "*.go" | xargs $(GOPATH)/bin/addlicense -check || (echo 'Run "make update-licenses"' && exit 1)
-
-.PHONY: update-licenses
-update-licenses: addlicense
-	find -type f -name "*.go" | xargs $(GOPATH)/bin/addlicense -c "The Kubernetes Authors."
-
-.PHONY: addlicense
-addlicense:
-ifndef HAS_ADDLICENSE
-	go install -mod=readonly github.com/google/addlicense
-endif
-
-
-# Verify
-# ------
-
-.PHONY: verify
-verify: verify-deps verify-lint verify-licenses verify-generated
-
-.PHONY: verify-deps
-verify-deps:
-	go mod verify
-	go mod tidy
-	@git diff --exit-code -- go.sum go.mod
-
-.PHONY: verify-generated
-verify-generated: update-generated
-	@git diff --exit-code -- $(generated_files)
-
-
-# Test
-# ----
+.PHONY: docker-manifest
+docker-manifest: docker-manifest-PROD docker-manifest-DBG docker-manifest-UBI
+docker-manifest-%:
+	@docker manifest create -a $(IMAGE):$(VERSION_$*) $(foreach PLATFORM,$(DOCKER_PLATFORMS),$(IMAGE):$(VERSION_$*)_$(subst /,_,$(PLATFORM)))
+	@docker manifest push $(IMAGE):$(VERSION_$*)
 
 .PHONY: test
-test:
-	CGO_ENABLED=0 go test ./pkg/...
+test: unit-tests
 
-.PHONY: test-adapter-container
-test-adapter-container: build-test-adapter
-	cp test-adapter-deploy/Dockerfile $(TEMP_DIR)
-	cp $(OUT_DIR)/$(ARCH)/test-adapter $(TEMP_DIR)/adapter
-	cd $(TEMP_DIR) && sed -i.bak "s|BASEIMAGE|scratch|g" Dockerfile
-	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) $(TEMP_DIR)
+unit-tests: $(BUILD_DIRS)
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        ARCH=$(ARCH)                                        \
+	        OS=$(OS)                                            \
+	        VERSION=$(VERSION)                                  \
+	        ./hack/test.sh $(SRC_PKGS)                          \
+	    "
 
-.PHONY: test-kind
-test-kind:
-	kind load docker-image $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
-	sed 's|REGISTRY|'${REGISTRY}'|g' test-adapter-deploy/testing-adapter.yaml | kubectl apply -f -
-	kubectl rollout restart -n custom-metrics deployment/custom-metrics-apiserver
+.PHONY: lint
+lint: $(BUILD_DIRS)
+	@echo "running linter"
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    --env GOFLAGS="-mod=vendor"                             \
+	    $(BUILD_IMAGE)                                          \
+	    golangci-lint run
+
+$(BUILD_DIRS):
+	@mkdir -p $@
+
+KUBE_NAMESPACE    ?= kubeops
+REGISTRY_SECRET   ?=
+IMAGE_PULL_POLICY ?= IfNotPresent
+
+ifeq ($(strip $(REGISTRY_SECRET)),)
+	IMAGE_PULL_SECRETS =
+else
+	IMAGE_PULL_SECRETS = --set imagePullSecrets[0].name=$(REGISTRY_SECRET)
+endif
+
+.PHONY: install
+install:
+	@cd ../installer; \
+	kubectl create ns $(KUBE_NAMESPACE) || true; \
+	kubectl label ns $(KUBE_NAMESPACE) pod-security.kubernetes.io/enforce=restricted --overwrite; \
+	helm upgrade -i storage-metrics-apiserver charts/storage-metrics-apiserver --wait --force \
+		--namespace=$(KUBE_NAMESPACE) --create-namespace \
+		--set registryFQDN="" \
+		--set image.registry=$(REGISTRY) \
+		--set image.tag=$(TAG_PROD) \
+		--set securityContext.seccompProfile.type=RuntimeDefault \
+		--set imagePullPolicy=$(IMAGE_PULL_POLICY) \
+		$(IMAGE_PULL_SECRETS);
+
+.PHONY: uninstall
+uninstall:
+	@cd ../installer; \
+	helm uninstall storage-metrics-apiserver --namespace=$(KUBE_NAMESPACE) || true
+
+.PHONY: purge
+purge: uninstall
+	@true
+
+.PHONY: dev
+dev: gen fmt push
+
+.PHONY: verify
+verify: verify-gen verify-modules
+
+.PHONY: verify-modules
+verify-modules:
+	go mod tidy
+	go mod vendor
+	@if !(git diff --exit-code HEAD); then \
+		echo "go module files are out of date"; exit 1; \
+	fi
+
+.PHONY: verify-gen
+verify-gen: gen fmt
+	@if !(git diff --exit-code HEAD); then \
+		echo "generated files are out of date, run make gen fmt"; exit 1; \
+	fi
+
+.PHONY: add-license
+add-license:
+	@echo "Adding license header"
+	@docker run --rm 	                                 \
+		-u $$(id -u):$$(id -g)                           \
+		-v /tmp:/.cache                                  \
+		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-w $(DOCKER_REPO_ROOT)                           \
+		--env HTTP_PROXY=$(HTTP_PROXY)                   \
+		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		$(BUILD_IMAGE)                                   \
+		ltag -t "./hack/license" --excludes "vendor contrib bin" -v
+
+.PHONY: check-license
+check-license:
+	@echo "Checking files have proper license header"
+	@docker run --rm 	                                 \
+		-u $$(id -u):$$(id -g)                           \
+		-v /tmp:/.cache                                  \
+		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
+		-w $(DOCKER_REPO_ROOT)                           \
+		--env HTTP_PROXY=$(HTTP_PROXY)                   \
+		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
+		$(BUILD_IMAGE)                                   \
+		ltag -t "./hack/license" --excludes "vendor contrib bin" --check -v
+
+.PHONY: ci
+ci: check-license lint build unit-tests #cover verify
+
+.PHONY: qa
+qa:
+	@if [ "$$APPSCODE_ENV" = "prod" ]; then                                              \
+		echo "Nothing to do in prod env. Are you trying to 'release' binaries to prod?"; \
+		exit 1;                                                                          \
+	fi
+	@if [ "$(version_strategy)" = "tag" ]; then               \
+		echo "Are you trying to 'release' binaries to prod?"; \
+		exit 1;                                               \
+	fi
+	@$(MAKE) clean all-push docker-manifest --no-print-directory
+
+.PHONY: release
+release:
+	@if [ "$$APPSCODE_ENV" != "prod" ]; then      \
+		echo "'release' only works in PROD env."; \
+		exit 1;                                   \
+	fi
+	@if [ "$(version_strategy)" != "tag" ]; then                    \
+		echo "apply tag to release binaries and/or docker images."; \
+		exit 1;                                                     \
+	fi
+	@$(MAKE) clean all-push docker-manifest --no-print-directory
+
+.PHONY: clean
+clean:
+	rm -rf .go bin
+
+.PHONY: run
+run:
+	go run -mod=vendor ./cmd/storage-metrics-apiserver \
+		--secure-port=6443 \
+		--lister-kubeconfig=$(KUBECONFIG) \
+		--authorization-kubeconfig=$(KUBECONFIG) \
+		--authentication-kubeconfig=$(KUBECONFIG) \
+		--authentication-skip-lookup \
+		--kubelet-insecure-tls \
+		--v=3
+
+.PHONY: push-to-kind
+push-to-kind: container
+	@echo "Loading docker image into kind cluster...."
+	@kind load docker-image $(IMAGE):$(TAG_PROD)
+	@echo "Image has been pushed successfully into kind cluster."
+
+.PHONY: deploy-to-kind
+deploy-to-kind: push-to-kind install
+
+.PHONY: deploy
+deploy: uninstall push install

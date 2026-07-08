@@ -32,9 +32,11 @@ pkg/storagemetrics/
   provider/        custom_metrics.MetricsProvider over the cache
   options/         kubelet client + scrape flags
 cmd/storage-metrics-apiserver/  main binary
-charts/storage-metrics-apiserver/  Helm chart
 manifests/storage-metrics-apiserver/  Kustomize bundle
 ```
+
+The Helm chart lives in the [`kubeops.dev/installer`](https://github.com/kubeops/installer)
+repo at `charts/storage-metrics-apiserver`.
 
 ### Scaling notes (large clusters)
 
@@ -52,7 +54,7 @@ manifests/storage-metrics-apiserver/  Kustomize bundle
 ```bash
 kubectl create namespace storage-metrics
 helm install storage-metrics-apiserver \
-  ./charts/storage-metrics-apiserver \
+  ../installer/charts/storage-metrics-apiserver \
   --namespace storage-metrics
 ```
 

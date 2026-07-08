@@ -23,16 +23,15 @@ import (
 	"testing"
 	"time"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
+
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	apitypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/cache"
-
 	v1listers "k8s.io/client-go/listers/core/v1"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
+	"k8s.io/client-go/tools/cache"
 )
 
 type fakeClient struct {

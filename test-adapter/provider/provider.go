@@ -21,6 +21,10 @@ import (
 	"net/http"
 	"sync"
 
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider/defaults"
+	"kubeops.dev/storage-metrics-apiserver/pkg/provider/helpers"
+
 	"github.com/emicklei/go-restful/v3"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -33,10 +37,6 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 	"k8s.io/metrics/pkg/apis/external_metrics"
-
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider/defaults"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/provider/helpers"
 )
 
 // CustomMetricResource wraps provider.CustomMetricInfo in a struct which stores the Name and Namespace of the resource
@@ -54,47 +54,45 @@ type externalMetric struct {
 	value  external_metrics.ExternalMetricValue
 }
 
-var (
-	testingExternalMetrics = []externalMetric{
-		{
-			info: provider.ExternalMetricInfo{
-				Metric: "my-external-metric",
-			},
-			labels: map[string]string{"foo": "bar"},
-			value: external_metrics.ExternalMetricValue{
-				MetricName: "my-external-metric",
-				MetricLabels: map[string]string{
-					"foo": "bar",
-				},
-				Value: *resource.NewQuantity(42, resource.DecimalSI),
-			},
+var testingExternalMetrics = []externalMetric{
+	{
+		info: provider.ExternalMetricInfo{
+			Metric: "my-external-metric",
 		},
-		{
-			info: provider.ExternalMetricInfo{
-				Metric: "my-external-metric",
+		labels: map[string]string{"foo": "bar"},
+		value: external_metrics.ExternalMetricValue{
+			MetricName: "my-external-metric",
+			MetricLabels: map[string]string{
+				"foo": "bar",
 			},
-			labels: map[string]string{"foo": "baz"},
-			value: external_metrics.ExternalMetricValue{
-				MetricName: "my-external-metric",
-				MetricLabels: map[string]string{
-					"foo": "baz",
-				},
-				Value: *resource.NewQuantity(43, resource.DecimalSI),
-			},
+			Value: *resource.NewQuantity(42, resource.DecimalSI),
 		},
-		{
-			info: provider.ExternalMetricInfo{
-				Metric: "other-external-metric",
-			},
-			labels: map[string]string{},
-			value: external_metrics.ExternalMetricValue{
-				MetricName:   "other-external-metric",
-				MetricLabels: map[string]string{},
-				Value:        *resource.NewQuantity(44, resource.DecimalSI),
-			},
+	},
+	{
+		info: provider.ExternalMetricInfo{
+			Metric: "my-external-metric",
 		},
-	}
-)
+		labels: map[string]string{"foo": "baz"},
+		value: external_metrics.ExternalMetricValue{
+			MetricName: "my-external-metric",
+			MetricLabels: map[string]string{
+				"foo": "baz",
+			},
+			Value: *resource.NewQuantity(43, resource.DecimalSI),
+		},
+	},
+	{
+		info: provider.ExternalMetricInfo{
+			Metric: "other-external-metric",
+		},
+		labels: map[string]string{},
+		value: external_metrics.ExternalMetricValue{
+			MetricName:   "other-external-metric",
+			MetricLabels: map[string]string{},
+			Value:        *resource.NewQuantity(44, resource.DecimalSI),
+		},
+	},
+}
 
 type metricValue struct {
 	labels    labels.Set

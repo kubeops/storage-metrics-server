@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM BASEIMAGE
-COPY adapter /
-ENTRYPOINT ["/adapter"]
+FROM {ARG_FROM}
+
+LABEL org.opencontainers.image.source https://github.com/kubeops/storage-metrics-apiserver
+
+RUN set -x \
+  && apk add --update --upgrade --no-cache pcre2 ca-certificates tzdata \
+  && echo 'Etc/UTC' > /etc/timezone
+
+ADD bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
+
+USER 65534
+
+ENTRYPOINT ["/{ARG_BIN}"]

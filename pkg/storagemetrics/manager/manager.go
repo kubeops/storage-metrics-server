@@ -23,10 +23,10 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/klog/v2"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/scraper"
+	"kubeops.dev/storage-metrics-apiserver/pkg/storagemetrics/storage"
 
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/scraper"
-	"sigs.k8s.io/custom-metrics-apiserver/pkg/storagemetrics/storage"
+	"k8s.io/klog/v2"
 )
 
 // Manager owns the scrape loop. It writes each tick's batch into the
