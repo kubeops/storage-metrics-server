@@ -21,6 +21,14 @@ Because it reads from `/stats/summary` (rather than the CSI driver's
 filesystem PVC — in-tree drivers, external CSI drivers, and migrated
 drivers — including older PVCs.
 
+### Documentation
+
+- [DESIGN.md](DESIGN.md) — architecture, data flow, and the reasoning behind
+  each design decision.
+- [TEST.md](TEST.md) — running the unit tests and verifying against a cluster.
+- [DEV.md](DEV.md) — what a Go developer needs to work on this repo.
+- [AGENTS.md](AGENTS.md) — condensed guidance for coding agents.
+
 ### Architecture
 
 ```
@@ -29,7 +37,7 @@ pkg/storagemetrics/
   scraper/         goroutine fan-out per Node (staggered, like metrics-server)
     client/        kubelet /stats/summary HTTP client + summary -> PVC batch
   manager/         tick loop driving scrape -> store
-  provider/        custom_metrics.MetricsProvider over the cache
+  provider/        provider.CustomMetricsProvider over the cache
   options/         kubelet client + scrape flags
 cmd/storage-metrics-server/  main binary
 manifests/storage-metrics-server/  Kustomize bundle
@@ -54,7 +62,8 @@ repo at `charts/storage-metrics-server`.
 ```bash
 kubectl create namespace storage-metrics
 helm install storage-metrics-server \
-  ../installer/charts/storage-metrics-server \
+  oci://ghcr.io/appscode-charts/storage-metrics-server \
+  --version v0.1.0 \
   --namespace storage-metrics
 ```
 
