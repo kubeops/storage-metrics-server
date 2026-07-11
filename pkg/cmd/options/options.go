@@ -66,7 +66,7 @@ func NewCustomMetricsAdapterServerOptions() *CustomMetricsAdapterServerOptions {
 
 // Validate validates CustomMetricsAdapterServerOptions
 func (o CustomMetricsAdapterServerOptions) Validate() []error {
-	errors := []error{}
+	errors := make([]error, 0, 5)
 	errors = append(errors, o.SecureServing.Validate()...)
 	errors = append(errors, o.Authentication.Validate()...)
 	errors = append(errors, o.Authorization.Validate()...)
