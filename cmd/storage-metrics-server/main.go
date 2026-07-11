@@ -153,7 +153,8 @@ func (a *StorageAdapter) run() error {
 
 	informerFactory.Start(ctx.Done())
 	klog.Info("waiting for Node and PVC informer caches to sync")
-	if !cache.WaitForCacheSync(ctx.Done(),
+	if !cache.WaitForCacheSync(
+		ctx.Done(),
 		nodeInformer.Informer().HasSynced,
 		pvcInformer.Informer().HasSynced,
 	) {
