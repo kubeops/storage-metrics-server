@@ -2,6 +2,8 @@ version: "2"
 linters:
   default: standard
   enable:
+    - bodyclose
+    - prealloc
     - unparam
   settings:
     staticcheck:
@@ -32,7 +34,7 @@ linters:
 
 formatters:
   enable:
-    - gofmt
+    - gofumpt
     - goimports
   settings:
     goimports:
